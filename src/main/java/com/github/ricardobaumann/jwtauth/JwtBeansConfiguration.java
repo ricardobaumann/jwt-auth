@@ -5,11 +5,11 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 
 @EnableConfigurationProperties(JwtProperties.class)
-public class JwtAuthConfiguration {
+public class JwtBeansConfiguration {
 
     private final JwtProperties jwtProperties;
 
-    public JwtAuthConfiguration(JwtProperties jwtProperties) {
+    public JwtBeansConfiguration(JwtProperties jwtProperties) {
         this.jwtProperties = jwtProperties;
     }
 

@@ -9,6 +9,6 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@Import(JwtBeansConfiguration.class)
-public @interface EnableCustomJwt {
+@Import(value = {JwtBeansConfiguration.class, JwtDefaultSecurityConfiguration.class})
+public @interface EnableJwtDefaultSecurityConfiguration {
 }
