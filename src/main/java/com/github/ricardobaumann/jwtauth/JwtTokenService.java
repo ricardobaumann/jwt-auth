@@ -1,32 +1,28 @@
 package com.github.ricardobaumann.jwtauth;
 
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 public class JwtTokenService {
 
-    private final String secretKey;
-    private final Long validityInMillis;
+    private final Long tokenValidityInMillis;
     private final JwtBuilder jwtBuilder;
-    private final JwtParserBuilder jwtParserBuilder;
+    private final JwtParser jwtParser;
     private final Clock clock;
 
-    public JwtTokenService(JwtProperties jwtProperties,
+    public JwtTokenService(Long tokenValidityInMillis,
                            JwtBuilder jwtBuilder,
-                           JwtParserBuilder jwtParserBuilder,
+                           JwtParser jwtParser,
                            Clock clock) {
-        secretKey = Base64.getEncoder().encodeToString(jwtProperties.getSecretKey().getBytes());
-        validityInMillis = jwtProperties.getValidityInMillis();
+        this.tokenValidityInMillis = tokenValidityInMillis;
         this.jwtBuilder = jwtBuilder;
-        this.jwtParserBuilder = jwtParserBuilder;
+        this.jwtParser = jwtParser;
         this.clock = clock;
     }
 
@@ -37,8 +33,7 @@ public class JwtTokenService {
         return jwtBuilder
                 .setClaims(claims)
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + validityInMillis))
-                .signWith(Keys.hmacShaKeyFor(secretKey.getBytes()), SignatureAlgorithm.HS256)
+                .setExpiration(new Date(now.getTime() + tokenValidityInMillis))
                 .compact();
     }
 
@@ -64,6 +59,6 @@ public class JwtTokenService {
 
 
     private Jws<Claims> parseClaims(String token) {
-        return jwtParserBuilder.setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes())).build().parseClaimsJws(token);
+        return jwtParser.parseClaimsJws(token);
     }
 }
