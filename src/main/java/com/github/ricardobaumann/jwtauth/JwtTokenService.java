@@ -51,6 +51,7 @@ public class JwtTokenService {
                 .flatMap(this::toAuthentication);
     }
 
+    @SuppressWarnings("unchecked")
     private Optional<Authentication> toAuthentication(Claims claims) {
         return Optional.ofNullable(claims.get("roles", List.class))
                 .map(roles -> new CustomUserDetails(claims.getSubject(), roles))
