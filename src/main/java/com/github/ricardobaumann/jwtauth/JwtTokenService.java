@@ -11,32 +11,35 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-public class JwtTokenProvider {
+public class JwtTokenService {
 
     private final String secretKey;
+    private final Long validityInMillis;
+    private final JwtBuilder jwtBuilder;
+    private final JwtParserBuilder jwtParserBuilder;
+    private final Clock clock;
 
-    public JwtTokenProvider(String secretKey) {
-        this.secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
+    public JwtTokenService(JwtProperties jwtProperties,
+                           JwtBuilder jwtBuilder,
+                           JwtParserBuilder jwtParserBuilder,
+                           Clock clock) {
+        secretKey = Base64.getEncoder().encodeToString(jwtProperties.getSecretKey().getBytes());
+        validityInMillis = jwtProperties.getValidityInMillis();
+        this.jwtBuilder = jwtBuilder;
+        this.jwtParserBuilder = jwtParserBuilder;
+        this.clock = clock;
     }
 
     public String createTokenFor(String username, List<String> roles) {
         Claims claims = Jwts.claims().setSubject(username);
         claims.put("roles", roles);
-        Date now = new Date();
-        //Date validity = new Date(now.getTime() + validityInMillis);
-        return Jwts.builder()
+        Date now = clock.now();
+        return jwtBuilder
                 .setClaims(claims)
                 .setIssuedAt(now)
-                //.setExpiration(validity)
+                .setExpiration(new Date(now.getTime() + validityInMillis))
                 .signWith(Keys.hmacShaKeyFor(secretKey.getBytes()), SignatureAlgorithm.HS256)
                 .compact();
-    }
-
-    private boolean isValid(Jws<Claims> claimsJws) {
-        return Optional.ofNullable(claimsJws.getBody())
-                .map(Claims::getExpiration)
-                .filter(date -> date.before(new Date()))
-                .isPresent();
     }
 
     private Optional<String> resolveTokenFrom(HttpServletRequest request) {
@@ -49,7 +52,6 @@ public class JwtTokenProvider {
     public Optional<Authentication> resolveAuthFrom(HttpServletRequest request) {
         return resolveTokenFrom(request)
                 .map(this::parseClaims)
-                //.filter(this::isValid)
                 .map(Jwt::getBody)
                 .flatMap(this::toAuthentication);
     }
@@ -62,6 +64,6 @@ public class JwtTokenProvider {
 
 
     private Jws<Claims> parseClaims(String token) {
-        return Jwts.parserBuilder().setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes())).build().parseClaimsJws(token);
+        return jwtParserBuilder.setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes())).build().parseClaimsJws(token);
     }
 }
