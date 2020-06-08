@@ -22,8 +22,8 @@ public class JwtBeansConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public JwtConfigurer jwtConfigurer() {
-        return new JwtConfigurer(jwtTokenService());
+    public JwtFilterConfigurer jwtConfigurer() {
+        return new JwtFilterConfigurer(jwtTokenService());
     }
 
     @Bean

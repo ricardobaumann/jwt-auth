@@ -46,7 +46,7 @@ public class JwtTokenService {
 
     public Optional<Authentication> resolveAuthFrom(HttpServletRequest request) {
         return resolveTokenFrom(request)
-                .map(this::parseClaims)
+                .map(jwtParser::parseClaimsJws)
                 .map(Jwt::getBody)
                 .flatMap(this::toAuthentication);
     }
@@ -56,10 +56,5 @@ public class JwtTokenService {
         return Optional.ofNullable(claims.get("roles", List.class))
                 .map(roles -> new CustomUserDetails(claims.getSubject(), roles))
                 .map(customUserDetails -> new UsernamePasswordAuthenticationToken(customUserDetails, "", customUserDetails.getAuthorities()));
-    }
-
-
-    private Jws<Claims> parseClaims(String token) {
-        return jwtParser.parseClaimsJws(token);
     }
 }
