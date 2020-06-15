@@ -1,4 +1,4 @@
-## Cake auth library
+## Jwt auth library
 
 This library intends to enable custom authentication and authorization support on http services. 
 
